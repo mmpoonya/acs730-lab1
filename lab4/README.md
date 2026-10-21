@@ -17,3 +17,4 @@ Put your work for Lab 4 in this folder.
 
 - what .dockerignore kept out of the context
 > The .dockerignore file successfully kept out heavy, sensitive, and unnecessary files (such as .git, .github, __pycache__/, *.md, and local evidence/ directories) from entering the Docker build context.
+
