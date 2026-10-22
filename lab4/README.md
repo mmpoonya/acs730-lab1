@@ -17,3 +17,10 @@ Put your work for Lab 4 in this folder.
 
 - what .dockerignore kept out of the context
 > The .dockerignore file successfully kept out heavy, sensitive, and unnecessary files (such as .git, .github, __pycache__/, *.md, and local evidence/ directories) from entering the Docker build context.
+
+| Component / Step            | Baseline (No Cache) | Cache Hit | Worth It?                                                                                                          |
+| --------------------------- | ------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
+| Pip Install Step            | 11s                 | 6s        | Yes — Speeds up test matrix execution by avoiding redundant package downloads from PyPI on unchanged dependencies. |
+| Docker Build Step           | 11s                 | 7s        | Yes — Reusing cached GHA layers avoids rebuilding static system dependencies and OS packages from scratch.         |
+| Whole Workflow (Wall Clock) | 1m 3s               | 49s       | Yes — Cumulative savings drastically shorten feedback loops for minor code tweaks.                                 |
+
