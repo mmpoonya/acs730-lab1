@@ -32,14 +32,20 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build local image for smoke test
+        uses: docker/build-push-action@v6
         with:
-          name: image
-      - run: docker load -i image.tar
-      - env:
-          TAG: ${{ needs.build.outputs.image-tag }}
+          context: lab4
+          load: true
+          tags: acs730-lab4:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Run smoke test container
         run: |
-          docker run -d --name app -p 8000:8000 "acs730-lab4:$TAG"
+          docker run -d --name app -p 8000:8000 acs730-lab4:smoke
           for i in $(seq 1 15); do
             curl -fsS http://localhost:8000/healthz && exit 0
             sleep 2
