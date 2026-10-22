@@ -24,3 +24,6 @@ Put your work for Lab 4 in this folder.
 | Docker Build Step           | 11s                 | 7s        | Yes — Reusing cached GHA layers avoids rebuilding static system dependencies and OS packages from scratch.         |
 | Whole Workflow (Wall Clock) | 1m 3s               | 49s       | Yes — Cumulative savings drastically shorten feedback loops for minor code tweaks.                                 |
 
+- Why a Composite Action vs. a Reusable Workflow:
+> The dependency setup is a collection of discrete steps that must execute directly within the exact same runner context as the test job, making a composite action the correct choice. Conversely, the container image build is a distinct job requiring elevated permissions (`packages: write`) that the test job deliberately must not have, which requires a separate reusable workflow.
+
