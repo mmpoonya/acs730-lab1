@@ -1,0 +1,38 @@
+snapshot behind the AMI: snap-001b4104bb3f8f52a
+{
+    "Return": true,
+    "DeleteSnapshotResults": []
+}
+remove_bucket: acs730-lab6-ssm-232620255552
+
+== EC2 instances
+   i-03d4391879489c9b9  running  t3.micro  acs730-lab6-web-1
+      -> aws ec2 terminate-instances --instance-ids i-03d4391879489c9b9
+   i-09d03a3a80679e07f  running  t3.micro  acs730-workstation   (your workstation -- keep this)
+   i-06601f108974c738b  running  t3.micro  acs730-lab6-web-0
+      -> aws ec2 terminate-instances --instance-ids i-06601f108974c738b
+
+== Your AMIs (and their snapshots)
+
+== Unattached EBS volumes
+
+== Snapshots you own
+
+== Non-default security groups
+   sg-0f7b80968501f59ed  launch-wizard-1
+      -> aws ec2 delete-security-group --group-id sg-0f7b80968501f59ed
+   sg-0d9476ab8a63bec99  module6-sg
+      -> aws ec2 delete-security-group --group-id sg-0d9476ab8a63bec99
+   sg-0fd2a77aae4e17d59  acs730-lab6-sg_bk
+      -> aws ec2 delete-security-group --group-id sg-0fd2a77aae4e17d59
+   sg-03538cd4a161c5282  acs730-lab6-sg
+      -> aws ec2 delete-security-group --group-id sg-03538cd4a161c5282
+
+== Terraform state files that still track resources
+   ./lab6/terraform/terraform.tfstate  tracks 3 resource(s)
+      -> cd ./lab6/terraform && terraform destroy
+   ./midterm-practice/terraform/terraform.tfstate  tracks 1 resource(s)
+      -> cd ./midterm-practice/terraform && terraform destroy
+
+Review the items above. This script deleted nothing.
+
