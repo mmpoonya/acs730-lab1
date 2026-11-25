@@ -1,0 +1,235 @@
+name: Assignment 1 - Multi-Environment Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'assignment1/**'
+      - '.github/workflows/assignment1-deploy.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: assignment1-deployment
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  deploy-staging:
+    name: Deploy Staging
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    environment: staging
+
+    env:
+      DEPLOY_ENV: staging
+
+    defaults:
+      run:
+        working-directory: assignment1/terraform/staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.3
+          terraform_wrapper: false
+
+      - name: Install Ansible and AWS dependencies
+        run: |
+          python3 -m pip install "ansible-core>=2.16,<2.20" boto3 botocore
+          ansible-galaxy collection install amazon.aws community.aws
+
+      - name: Install SSM Session Manager plugin
+        run: |
+          curl -fsSL -o /tmp/ssm.deb \
+            https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb
+          sudo dpkg -i /tmp/ssm.deb
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        run: |
+          set -o pipefail
+          terraform apply -input=false -no-color tfplan \
+            2>&1 | tee staging-apply.txt
+
+      - name: Upload Terraform apply evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-apply
+          path: assignment1/terraform/staging/staging-apply.txt
+
+      - name: Wait for SSM and deploy application
+        working-directory: assignment1/ansible
+        run: |
+          ready=false
+
+          for i in $(seq 1 30); do
+            if ansible -i inventory/staging.aws_ec2.yml \
+              role_web -m ansible.builtin.ping; then
+
+              if ansible-inventory \
+                -i inventory/staging.aws_ec2.yml \
+                --list | jq -e \
+                '.role_web.hosts | length > 0'; then
+                ready=true
+                break
+              fi
+            fi
+
+            echo "Waiting for staging SSM registration ($i/30)"
+            sleep 10
+          done
+
+          test "$ready" = true
+
+          ansible-playbook \
+            -i inventory/staging.aws_ec2.yml \
+            site.yml \
+            -e "deployment_environment=staging" \
+            -e "build_tag=${GITHUB_SHA}"
+
+      - name: Verify staging application
+        run: |
+          set -euo pipefail
+          for url in $(terraform output -json web_urls | jq -r '.[]'); do
+            curl -fsS --retry 10 --retry-delay 5 \
+              --retry-all-errors "$url" > /tmp/staging.html
+            grep -F "Environment: staging" /tmp/staging.html
+            grep -F "Build: ${GITHUB_SHA}" /tmp/staging.html
+          done
+
+  deploy-prod:
+    name: Deploy Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+
+    environment: prod
+
+    env:
+      DEPLOY_ENV: prod
+
+    defaults:
+      run:
+        working-directory: assignment1/terraform/prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.3
+          terraform_wrapper: false
+
+      - name: Install Ansible and AWS dependencies
+        run: |
+          python3 -m pip install "ansible-core>=2.16,<2.20" boto3 botocore
+          ansible-galaxy collection install amazon.aws community.aws
+
+      - name: Install SSM Session Manager plugin
+        run: |
+          curl -fsSL -o /tmp/ssm.deb \
+            https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb
+          sudo dpkg -i /tmp/ssm.deb
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        run: |
+          set -o pipefail
+          terraform apply -input=false -no-color tfplan \
+            2>&1 | tee prod-apply.txt
+
+      - name: Upload Terraform apply evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-apply
+          path: assignment1/terraform/prod/prod-apply.txt
+
+      - name: Wait for SSM and deploy application
+        working-directory: assignment1/ansible
+        run: |
+          ready=false
+
+          for i in $(seq 1 30); do
+            if ansible -i inventory/prod.aws_ec2.yml \
+              role_web -m ansible.builtin.ping; then
+
+              if ansible-inventory \
+                -i inventory/prod.aws_ec2.yml \
+                --list | jq -e \
+                '.role_web.hosts | length > 0'; then
+                ready=true
+                break
+              fi
+            fi
+
+            echo "Waiting for production SSM registration ($i/30)"
+            sleep 10
+          done
+
+          test "$ready" = true
+
+          ansible-playbook \
+            -i inventory/prod.aws_ec2.yml \
+            site.yml \
+            -e "deployment_environment=prod" \
+            -e "build_tag=${GITHUB_SHA}"
+
+      - name: Verify production application
+        run: |
+          set -euo pipefail
+          for url in $(terraform output -json web_urls | jq -r '.[]'); do
+            curl -fsS --retry 10 --retry-delay 5 \
+              --retry-all-errors "$url" > /tmp/prod.html
+            grep -F "Environment: prod" /tmp/prod.html
+            grep -F "Build: ${GITHUB_SHA}" /tmp/prod.html
+          done
