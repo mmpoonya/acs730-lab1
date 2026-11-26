@@ -9,5 +9,7 @@ module "infrastructure" {
   additional_tags = {
     Purpose = "Production"
   }
+
+  cpu_alarm_threshold = 80
 }
 
