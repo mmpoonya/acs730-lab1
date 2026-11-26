@@ -7,3 +7,11 @@
 |  /acs730/assignment1/prod/db-password    |  Standard |  SecureString |  1        |
 |  /acs730/assignment1/staging/db-password |  Standard |  SecureString |  1        |
 +------------------------------------------+-----------+---------------+-----------+
+
+===== Terraform data source verification =====
+===== staging =====
+"/acs730/assignment1/staging/db-password"
+1
+===== prod =====
+"/acs730/assignment1/prod/db-password"
+1
