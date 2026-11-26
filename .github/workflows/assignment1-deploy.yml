@@ -46,10 +46,22 @@ jobs:
           terraform_version: 1.10.3
           terraform_wrapper: false
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install Ansible and AWS dependencies
         run: |
-          python3 -m pip install "ansible-core>=2.16,<2.20" boto3 botocore
-          ansible-galaxy collection install amazon.aws community.aws
+          python -m pip install \
+            "ansible-core>=2.19,<2.20" \
+            boto3 botocore
+
+          ansible-galaxy collection install \
+            -r "$GITHUB_WORKSPACE/assignment1/ansible/requirements.yml"
+
+          ansible --version
+          ansible-galaxy collection list
 
       - name: Install SSM Session Manager plugin
         run: |
@@ -159,10 +171,22 @@ jobs:
           terraform_version: 1.10.3
           terraform_wrapper: false
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install Ansible and AWS dependencies
         run: |
-          python3 -m pip install "ansible-core>=2.16,<2.20" boto3 botocore
-          ansible-galaxy collection install amazon.aws community.aws
+          python -m pip install \
+            "ansible-core>=2.19,<2.20" \
+            boto3 botocore
+
+          ansible-galaxy collection install \
+            -r "$GITHUB_WORKSPACE/assignment1/ansible/requirements.yml"
+
+          ansible --version
+          ansible-galaxy collection list
 
       - name: Install SSM Session Manager plugin
         run: |
