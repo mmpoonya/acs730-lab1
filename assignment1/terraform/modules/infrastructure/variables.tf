@@ -46,3 +46,17 @@ variable "additional_tags" {
   default     = {}
 }
 
+variable "cpu_alarm_threshold" {
+  description = "CPU utilization percentage that triggers the alarm"
+  type        = number
+  default     = 80
+
+  validation {
+    condition = (
+      var.cpu_alarm_threshold > 0 &&
+      var.cpu_alarm_threshold <= 100
+    )
+
+    error_message = "CPU alarm threshold must be greater than 0 and at most 100."
+  }
+}

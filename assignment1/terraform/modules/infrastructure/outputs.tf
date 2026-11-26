@@ -32,3 +32,17 @@ output "environment" {
   value       = var.environment
 }
 
+output "application_secret_name" {
+  description = "SSM parameter name for the application secret"
+  value       = data.aws_ssm_parameter.db_password.name
+}
+
+output "application_secret_version" {
+  description = "Version of the application secret in SSM"
+  value       = data.aws_ssm_parameter.db_password.version
+}
+
+output "cpu_alarm_names" {
+  description = "Names of EC2 CPU utilization alarms"
+  value       = aws_cloudwatch_metric_alarm.high_cpu[*].alarm_name
+}

@@ -1,0 +1,9 @@
+------------------------------------------------------------------------------------
+|                                DescribeParameters                                |
++------------------------------------------+-----------+---------------+-----------+
+|                   Name                   |   Tier    |     Type      |  Version  |
++------------------------------------------+-----------+---------------+-----------+
+|  /acs730/assignment1/dev/db-password     |  Standard |  SecureString |  1        |
+|  /acs730/assignment1/prod/db-password    |  Standard |  SecureString |  1        |
+|  /acs730/assignment1/staging/db-password |  Standard |  SecureString |  1        |
++------------------------------------------+-----------+---------------+-----------+
