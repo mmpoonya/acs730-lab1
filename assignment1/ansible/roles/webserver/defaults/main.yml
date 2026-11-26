@@ -9,5 +9,4 @@ deployment_environment: "unknown"
 
 build_tag: "local-development"
 
-app_version: "1.0.0"
-
+app_version: "1.1.0"

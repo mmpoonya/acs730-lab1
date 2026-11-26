@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'assignment1/**'
+      - 'assignment1/terraform/**'
+      - 'assignment1/ansible/**'
       - '.github/workflows/assignment1-deploy.yml'
 
   workflow_dispatch:
@@ -121,7 +122,14 @@ jobs:
       - name: Verify staging application
         run: |
           set -euo pipefail
-          for url in $(terraform output -json web_urls | jq -r '.[]'); do
+
+          URLS=$(terraform output -json web_urls)
+
+          echo "$URLS" | jq -e 'length > 0'
+
+          for url in $(echo "$URLS" | jq -r '.[]'); do
+            echo "Testing $url"
+
             curl -fsS --retry 10 --retry-delay 5 \
               --retry-all-errors "$url" > /tmp/staging.html
             grep -F "Environment: staging" /tmp/staging.html
@@ -227,7 +235,14 @@ jobs:
       - name: Verify production application
         run: |
           set -euo pipefail
-          for url in $(terraform output -json web_urls | jq -r '.[]'); do
+
+          URLS=$(terraform output -json web_urls)
+
+          echo "$URLS" | jq -e 'length > 0'
+
+          for url in $(echo "$URLS" | jq -r '.[]'); do
+            echo "Testing $url"
+
             curl -fsS --retry 10 --retry-delay 5 \
               --retry-all-errors "$url" > /tmp/prod.html
             grep -F "Environment: prod" /tmp/prod.html
