@@ -1,0 +1,3 @@
+2026-11-25 20:27:34        488 assignment1/dev/terraform.tfstate
+2026-11-26 02:47:21      11979 assignment1/prod/terraform.tfstate
+2026-11-26 02:31:47      12013 assignment1/staging/terraform.tfstate

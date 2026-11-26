@@ -1,0 +1,22 @@
+module.infrastructure.aws_security_group.web: Creating...
+module.infrastructure.aws_security_group.web: Creation complete after 4s [id=sg-0f235f3ba6deb182f]
+module.infrastructure.aws_instance.web[0]: Creating...
+module.infrastructure.aws_instance.web[0]: Still creating... [10s elapsed]
+module.infrastructure.aws_instance.web[0]: Creation complete after 13s [id=i-0cc213e02f769a561]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+environment = "staging"
+first_web_public_ip = "100.26.139.119"
+security_group_id = "sg-0f235f3ba6deb182f"
+web_instance_ids = [
+  "i-0cc213e02f769a561",
+]
+web_public_ips = [
+  "100.26.139.119",
+]
+web_urls = [
+  "http://100.26.139.119",
+]
