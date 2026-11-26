@@ -3,7 +3,11 @@
 *.tfstate.*
 *.tfstate.backup
 .env
+.env.*
 .terraform/
 crash.log
+crash.*.log
 credentials
 tfplan
+*.tfplan
+*.tfvars.json
